@@ -4,9 +4,9 @@
 	
 	ARM_FUNC_START _intr
 _intr:
-	mov	ip, #0x4000000
-	add ip, ip, #0x200
-	ldr	r2, [ip]
+	mov	r12, #0x4000000
+	add r12, r12, #0x200
+	ldr	r2, [r12]
 	and	r2, r2, r2, lsr #16
 	mov	r3, #0
 	mov	r1, #1
@@ -18,7 +18,7 @@ loop:
 	bne	loop
 callInterrupt:
 	ldr	r2, =gIntrTable
-	strh r0, [ip, #2]
+	strh r0, [r12, #2]
 	ldr	r3, [r2, r3, lsl #2]
 	bx	r3
 
