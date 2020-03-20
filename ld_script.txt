@@ -4,7 +4,6 @@ SECTIONS {
     ALIGN(4)
     {
         src/*.o(ewram_data);
-		
 		end = .;
 		. = 0x40000;
     }
@@ -14,7 +13,9 @@ SECTIONS {
     iwram (NOLOAD) :
     ALIGN(4)
     {
+        src/*.o(.bss*);
         src/*.o(COMMON);
+        src/*.o(iwram_data);
 		end = .;
         . = 0x8000;
 	}
@@ -27,7 +28,6 @@ SECTIONS {
         src/*.o(.text);
 		asm/*.o(.text);
 		*libgcc.a:*.o(.text*);
-        *libc.a:*.o(.text*);
     } =0
     .rodata :
     ALIGN(4)

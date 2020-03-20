@@ -1,10 +1,12 @@
 	.section .data
     .include "asm/macros.inc"
-	
-    .global gMugiTileSheet
-gMugiTileSheet:
-	.incbin "graphics/mugi_tiles.8bpp"
-	
-	.global gMugiTilePalette
-gMugiTilePalette:
-	.incbin "graphics/mugi_tiles.gbapal"
+
+	.align 2, 0
+	.global sMusicCagayakeGirls
+sMusicCagayakeGirls:
+	.incbin "sound/shinegirls.pcm"
+
+	.align 2, 0
+	.global sVideoKonSeason1Intro
+sVideoKonSeason1Intro:
+	.incbin "data/video.bin"

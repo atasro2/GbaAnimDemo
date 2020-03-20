@@ -1,25 +1,27 @@
 	.include "asm/macros.inc"
 	.syntax unified
-	@ hand optimized compiler generated code
-	
+	@ hand optimized compiler generated code (looks nothing like compiler code now lol)
+	@ credit goes to ax6 and Gericom + a bunch of other people i might have forgotten 
+
 	ARM_FUNC_START _intr
 _intr:
-	mov	r12, #0x4000000
-	add r12, r12, #0x200
-	ldr	r2, [r12]
-	and	r2, r2, r2, lsr #16
-	mov	r3, #0
-	mov	r1, #1
-loop:
-	ands	r0, r2, r1, lsl r3
-	bne callInterrupt
-	add	r3, r3, #1
-	cmp	r3, #14
-	bne	loop
-callInterrupt:
-	ldr	r2, =gIntrTable
-	strh r0, [r12, #2]
-	ldr	r3, [r2, r3, lsl #2]
-	bx	r3
+	mov r3, 0x4000000
+	ldr r2, [r3, 0x200]!
+	and r2, r2, r2, lsr #16
+	str r2, [r3, -0x208]
+	mov r1, #-1
+.loop:
+	add r1, #1
+	lsrs r2, #1
+	bcc .loop
+	ldr r2, =gIntrTable
+	mov r0, #1
+	lsl r0, r1
+	strh r0, [r3, #2]
+	ldr r0, [r2, r1, lsl #2]
+	bx r0
 
 	.pool
+
+	.global interrupt_end
+interrupt_end:

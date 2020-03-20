@@ -1,6 +1,6 @@
-# GbaAnimDemo
+# GbaAnimDemo 2.0
 Stupid code for a stupid reason
 
-Displaying a quick animation loop of Tsumugi Kotobuki on the gba because why not
+Cagayake! Girls. i'm genuinely becoming a weeb help.
 
 have fun setting up this repository if you ever want to do it

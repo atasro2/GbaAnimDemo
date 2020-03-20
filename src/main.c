@@ -1,13 +1,21 @@
 #include "global.h"
-#include "m4a.h"
+#include "video.h"
+#include "sound.h"
 
-void (*gIntrTable[14])();
+void (*gIntrTable[14])(void);
+u32 gInterruptVector[0x20] = {0};
+struct Main gMain;
 
-extern u8 gMugiTileSheet[];
-extern u8 gMugiTilePalette[];
-static void IntrDummy();
-static void VBlankIntr();
-static void Dma3Intr(void);
+// interrupt stuff for moving to ram
+extern void _intr(void);
+extern u8 interrupt_end;
+//
+
+extern u8 sMusicCagayakeGirls[];
+extern u8 sVideoKonSeason1Intro[];
+
+static void IntrDummy(void);
+static void VBlankIntr(void);
 
 static void (*IntrTableFunctionPtrs[])() =
 {
@@ -27,23 +35,30 @@ static void (*IntrTableFunctionPtrs[])() =
     IntrDummy
 };
 
+void ReadKeys(void)
+{
+	u8 keys = KEY_NEW();
+	gMain.joypad.heldKeys = gMain.joypad.heldKeysRaw;
+    gMain.joypad.newKeys = gMain.joypad.newKeysRaw;
+    gMain.joypad.heldKeysRaw = keys;
+    gMain.joypad.newKeysRaw = keys & ~gMain.joypad.heldKeys;
+    
+}
+
 void ClearRamAndInitInterrupts(void)
 {
 	u32 i;
 	
     RegisterRamReset(RESET_SIO_REGS | RESET_SOUND_REGS | RESET_REGS);
-    DmaFill32(3, 0, IWRAM_START, 0x7E00);  // Clear IWRAM
-    DmaFill32(3, 0, EWRAM_START, 0x40000); // Clear EWRAM
+    DmaFill32(3, 0, IWRAM_START, 0x7E00);
+    DmaFill32(3, 0, EWRAM_START, 0x40000);
 
     RegisterRamReset(RESET_OAM | RESET_VRAM | RESET_PALETTE);
-
-    for (i = 0; i < ARRAY_COUNT(IntrTableFunctionPtrs); i++)
-    {
-        gIntrTable[i] = IntrTableFunctionPtrs[i];
-    }
-
+	DmaCopy32(3, IntrTableFunctionPtrs, gIntrTable, sizeof(gIntrTable));
+	DmaCopy32(3, _intr, gInterruptVector, (u32)&interrupt_end - (u32)&_intr);
     REG_WAITCNT = WAITCNT_WS0_N_3 | WAITCNT_WS0_S_1 | WAITCNT_WS1_N_4 | WAITCNT_WS1_S_4 | WAITCNT_WS2_N_4 | WAITCNT_WS2_S_8 | WAITCNT_PHI_OUT_NONE | WAITCNT_PREFETCH_ENABLE;
-    REG_IE = INTR_FLAG_VBLANK;
+    INTR_VECTOR = &gInterruptVector;
+	REG_IE = INTR_FLAG_VBLANK;
     REG_DISPSTAT = DISPSTAT_VBLANK_INTR;
     REG_IME = TRUE;
 }
@@ -64,46 +79,31 @@ void InitBG3Tilemap(void)
 	}
 }
 
-struct Main {
-	vu32 frameCounter;
-	volatile bool8 drawNextFrame;
-};
-
-struct Main gMain;
-
 void VBlankIntr(void)
 {
+	SoundVSync();
+	VideoVSync();
 	gMain.frameCounter++;
-	gMain.drawNextFrame = TRUE;
 }
 
 void AgbMain(void)
 {
-	u32 offset = 0;
-	
 	ClearRamAndInitInterrupts();
 	gMain.frameCounter = 0;
-	gMain.drawNextFrame = TRUE;
-	REG_BG3CNT = BGCNT_PRIORITY(3) | BGCNT_CHARBASE(0) | BGCNT_SCREENBASE(31) | BGCNT_256COLOR; 
 	InitBG3Tilemap();
-	REG_DISPCNT = (1 << 11) | (1 << 13); 
-	REG_WINOUT = 0x8;
-	DmaCopy16(3, gMugiTilePalette, 0x5000000, 512); // load palette
-    for (;;)
+	REG_BG3CNT = BGCNT_PRIORITY(3) | BGCNT_CHARBASE(0) | BGCNT_SCREENBASE(31) | BGCNT_256COLOR; 
+	REG_DISPCNT = DISPCNT_BG3_ON | DISPCNT_WIN0_ON; 
+	REG_WINOUT = WINOUT_WIN01_BG3;
+	PlayVideo(sVideoKonSeason1Intro, FALSE);
+	InitSound();
+	StartPCMStream(sMusicCagayakeGirls, TRUE);
+	for (;;)
 	{
-		//SetLCDIORegs();
-		// a little too slow because the orignal video was 24 fps.. 
-		// would technically have to wait 2.5 frames for it to look alright
-		// and that's not possible but we could do frame interleaving but eh
-		// this is good enough for now
-		if(gMain.drawNextFrame && (gMain.frameCounter % 2) == 0) 
-		{
-			gMain.drawNextFrame = FALSE;
-			DmaSet(3, gMugiTileSheet + offset * 30*20*64, (u16 *)0x6000000, (DMA_ENABLE | DMA_START_VBLANK | DMA_16BIT | DMA_SRC_INC | DMA_DEST_INC) << 16 | ((30*20*64)/(16/8)));
-			if(offset < 20) 
-				offset++;
-			else 
-				offset = 0;
-		}	
+		ReadKeys();
+		if(gMain.joypad.newKeys & A_BUTTON)
+			StartPCMStream(sMusicCagayakeGirls, FALSE);
+		
+		VideoDecompress();
+		VBlankIntrWait();
 	}
 }

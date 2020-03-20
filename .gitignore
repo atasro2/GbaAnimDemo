@@ -50,6 +50,10 @@ Temporary Items
 # Build Outputs
 # =========================
 
+*.gbapal
+*.8bpp
+*.4bpp
+*.pcm
 *.exe
 *.gba
 *.elf
