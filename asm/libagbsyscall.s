@@ -10,6 +10,11 @@ CpuSet:
 LZ77UnCompWram:
 	svc #0x11
 	bx lr
+	
+	THUMB_FUNC_START RLEUnCompWram
+RLEUnCompWram:
+	svc #0x14
+	bx lr
 
 	THUMB_FUNC_START RegisterRamReset
 RegisterRamReset:

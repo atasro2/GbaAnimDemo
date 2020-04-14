@@ -37,21 +37,20 @@ static void (*IntrTableFunctionPtrs[])() =
 
 void ReadKeys(void)
 {
-	u8 keys = KEY_NEW();
-	gMain.joypad.heldKeys = gMain.joypad.heldKeysRaw;
+    gMain.joypad.heldKeys = gMain.joypad.heldKeysRaw;
     gMain.joypad.newKeys = gMain.joypad.newKeysRaw;
-    gMain.joypad.heldKeysRaw = keys;
-    gMain.joypad.newKeysRaw = keys & ~gMain.joypad.heldKeys;
+    gMain.joypad.heldKeysRaw = KEY_NEW();
+    gMain.joypad.newKeysRaw = KEY_NEW() & ~gMain.joypad.heldKeys;
     
 }
 
 void ClearRamAndInitInterrupts(void)
 {
-	u32 i;
+    u32 i;
 	
     RegisterRamReset(RESET_SIO_REGS | RESET_SOUND_REGS | RESET_REGS);
-    DmaFill32(3, 0, IWRAM_START, 0x7E00);
-    DmaFill32(3, 0, EWRAM_START, 0x40000);
+    DmaFill32(3, 0, IWRAM_START, 0x7F80);
+    DmaFill32(3, 0, EWRAM_START, 0x30000);
 
     RegisterRamReset(RESET_OAM | RESET_VRAM | RESET_PALETTE);
 	DmaCopy32(3, IntrTableFunctionPtrs, gIntrTable, sizeof(gIntrTable));
@@ -81,12 +80,12 @@ void InitBG3Tilemap(void)
 
 void VBlankIntr(void)
 {
+	gMain.frameCounter++;
 	SoundVSync();
 	VideoVSync();
-	gMain.frameCounter++;
 }
 
-void AgbMain(void)
+void AgbMain(void) // could technically be 30 FPS with my current video setup
 {
 	ClearRamAndInitInterrupts();
 	gMain.frameCounter = 0;
@@ -96,13 +95,14 @@ void AgbMain(void)
 	REG_WINOUT = WINOUT_WIN01_BG3;
 	PlayVideo(sVideoKonSeason1Intro, FALSE);
 	InitSound();
-	StartPCMStream(sMusicCagayakeGirls, TRUE);
+	StartPCMStream(sMusicCagayakeGirls, FALSE);
 	for (;;)
 	{
+		if(gMain.joypad.heldKeys == (A_BUTTON|B_BUTTON|START_BUTTON|SELECT_BUTTON))
+			AgbMain();		
 		ReadKeys();
 		if(gMain.joypad.newKeys & A_BUTTON)
-			StartPCMStream(sMusicCagayakeGirls, FALSE);
-		
+			StartPCMStream(sMusicCagayakeGirls, FALSE);		
 		VideoDecompress();
 		VBlankIntrWait();
 	}

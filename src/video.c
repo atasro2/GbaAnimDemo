@@ -30,7 +30,7 @@ static struct VideoState sVideoState;
 
 void PlayVideo(void * video, bool32 loop)
 {
-    DmaCopy16(3, RLDecompress, RLDecompressWramBuf, 0x80); // moving more data than needed! shouldn't be a problem?
+    DmaCopy32(3, RLDecompress, RLDecompressWramBuf, 0x80); // moving more data than needed! shouldn't be a problem?
     RLDecompressWram = (void (*)(void * src, void * dst))RLDecompressWramBuf;
     sVideoState.videoDataPtr = video;
     sVideoState.length = READ_INC(sVideoState.videoDataPtr, u32);
