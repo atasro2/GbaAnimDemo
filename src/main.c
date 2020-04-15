@@ -106,6 +106,6 @@ void AgbMain(void) // could technically be 30 FPS with my current video setup
 		VideoDecompress();
 		VBlankIntrWait();
 	}
-	DmaFill16(3, 0xFF, 0x5000000, 0x400);
+	DmaFill16(3, 0x0, 0x5000000, 0x400);
 	SoftReset(RESET_ALL);
 }
