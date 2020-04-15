@@ -63,7 +63,7 @@ void VideoVSync(void)
 
     if(sVideoState.videoState == VIDEO_STATE_DRAW && (gMain.frameCounter % sVideoState.frameDelay) == 0)
     {
-        if(sVideoState.frameNum < sVideoState.length-1)
+        if(sVideoState.frameNum < sVideoState.length-1) // the length-1 might have been my tool
         {
             DmaCopy16(3, sVideoState.videoDataPtr, 0x5000000, sVideoState.paletteSize);
             sVideoState.videoDataPtr += sVideoState.paletteSize;

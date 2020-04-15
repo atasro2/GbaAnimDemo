@@ -1,6 +1,11 @@
 	.include "asm/macros.inc"
 	.syntax unified
 
+	THUMB_FUNC_START SoftReset
+SoftReset:
+	svc #0x00
+	bx lr
+
 	THUMB_FUNC_START CpuSet
 CpuSet:
 	svc #0xb

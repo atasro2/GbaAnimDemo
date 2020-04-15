@@ -99,11 +99,13 @@ void AgbMain(void) // could technically be 30 FPS with my current video setup
 	for (;;)
 	{
 		if(gMain.joypad.heldKeys == (A_BUTTON|B_BUTTON|START_BUTTON|SELECT_BUTTON))
-			AgbMain();		
+			break;		
 		ReadKeys();
 		if(gMain.joypad.newKeys & A_BUTTON)
 			StartPCMStream(sMusicCagayakeGirls, FALSE);		
 		VideoDecompress();
 		VBlankIntrWait();
 	}
+	DmaFill16(3, 0, 0x5000000, 0x400);
+	SoftReset(RESET_ALL);
 }
