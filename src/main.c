@@ -49,7 +49,7 @@ void ClearRamAndInitInterrupts(void)
     u32 i;
 	
     RegisterRamReset(RESET_SIO_REGS | RESET_SOUND_REGS | RESET_REGS);
-    DmaFill32(3, 0, IWRAM_START, 0x7F80);
+    DmaFill32(3, 0, IWRAM_START, 0x7E00);
     DmaFill32(3, 0, EWRAM_START, 0x30000);
 
     RegisterRamReset(RESET_OAM | RESET_VRAM | RESET_PALETTE);
@@ -106,6 +106,6 @@ void AgbMain(void) // could technically be 30 FPS with my current video setup
 		VideoDecompress();
 		VBlankIntrWait();
 	}
-	DmaFill16(3, 0x0, 0x5000000, 0x400);
+	DmaFill16(3, 0x0, PLTT, 0x400);
 	SoftReset(RESET_ALL);
 }

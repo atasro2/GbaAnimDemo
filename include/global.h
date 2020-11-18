@@ -18,6 +18,31 @@ do { \
 	(var) |= (*((src) + 3) << 24); \
 } while (0)
 
+// Converts a number to Q8.8 fixed-point format
+#define Q_8_8(n) ((s16)((n) * 256))
+
+// Converts a number to Q4.12 fixed-point format
+#define Q_4_12(n)  ((s16)((n) * 4096))
+#define UQ_4_12(n)  ((u16)((n) * 4096))
+
+// Converts a number to Q24.8 fixed-point format
+#define Q_24_8(n)  ((s32)((n) * 256))
+
+// Converts a Q8.8 fixed-point format number to a regular integer
+#define Q_8_8_TO_INT(n) ((int)((n) / 256))
+
+// Converts a Q4.12 fixed-point format number to a regular integer
+#define Q_4_12_TO_INT(n)  ((int)((n) / 4096))
+#define UQ_4_12_TO_INT(n)  ((int)((n) / 4096))
+
+// Converts a Q24.8 fixed-point format number to a regular integer
+#define Q_24_8_TO_INT(n) ((int)((n) >> 8))
+
+// Rounding value for Q4.12 fixed-point format
+#define Q_4_12_ROUND ((1) << (12 - 1))
+#define UQ_4_12_ROUND ((1) << (12 - 1))
+
+
 struct Joypad
 {
 	u8 newKeys;
